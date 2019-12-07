@@ -1,0 +1,82 @@
+/* Microchip Technology Inc. and its subsidiaries.  You may use this software 
+ * and any derivatives exclusively with Microchip products. 
+ * 
+ * THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS".  NO WARRANTIES, WHETHER 
+ * EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED 
+ * WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A 
+ * PARTICULAR PURPOSE, OR ITS INTERACTION WITH MICROCHIP PRODUCTS, COMBINATION 
+ * WITH ANY OTHER PRODUCTS, OR USE IN ANY APPLICATION. 
+ *
+ * IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE, 
+ * INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND 
+ * WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS 
+ * BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE.  TO THE 
+ * FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS 
+ * IN ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF 
+ * ANY, THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
+ *
+ * MICROCHIP PROVIDES THIS SOFTWARE CONDITIONALLY UPON YOUR ACCEPTANCE OF THESE 
+ * TERMS. 
+ */
+
+/* 
+ * Author: Jiri Konecny
+ * Comments: Config header for MCP23017
+ */
+
+/*IOCON.BANK = 1
+Address
+IOCON.BANK = 0 
+        Access to:
+00h 00h IODIRA
+10h 01h IODIRB
+01h 02h IPOLA
+11h 03h IPOLB
+02h 04h GPINTENA
+12h 05h GPINTENB
+03h 06h DEFVALA
+13h 07h DEFVALB
+04h 08h INTCONA
+14h 09h INTCONB
+05h 0Ah IOCON
+15h 0Bh IOCON
+06h 0Ch GPPUA
+16h 0Dh GPPUB
+07h 0Eh INTFA
+17h 0Fh INTFB
+08h 10h INTCAPA
+18h 11h INTCAPB
+09h 12h GPIOA
+19h 13h GPIOB
+0Ah 14h OLATA
+1Ah 15h OLATB*/
+
+// This is a guard condition so that contents of this file are not included
+// more than once.  
+#ifndef MCP23017_CONFIG
+#define	MCP23017_CONFIG
+
+#include "I2CLibV2.h"
+
+#define IOCON 0x05  //Config IOCON, no seq BANK=0
+#define GPPU 0x06   //Config GPPU, pullup
+#define INTF 0x07   //Config INTF, interrrupt
+#define INTCAP 0x08 //Config INTCAP, interrrupt pre value
+#define GPIOA 0x09   //Config GPIO, general purpose register A
+#define GPIOB 0x19   //Config GPIO, general purpose register B
+
+#define IODIRA 0x00 //Config IODIR, direction IN/OUT A
+#define IODIRB 0x10 //Config IODIR, direction IN/OUT B
+
+#define OLAT 0x0A   //Config OLAT, output latch register
+
+#define ADDRESS 0x40 //0b0100
+
+unsigned char DEVICE_ADRESS=0x00;
+
+void SetDeviceAdress(unsigned char addr){
+    DEVICE_ADRESS=ADDRESS|addr;
+}
+
+#endif	/* XC_HEADER_TEMPLATE_H */
+
