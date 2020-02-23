@@ -52,8 +52,8 @@ void Config_MCP23017_Fast(){
     I2C_STR();
     WriteI2C(ADR_MCP23017_W);
     
-    WriteI2C(0x00); //IODIRA
-    WriteI2C(0x00); //IODIRB
+    WriteI2C(0xFF); //IODIRA
+    WriteI2C(0xFF); //IODIRB
     WriteI2C(0x00); //IPOLA
     WriteI2C(0x00); //IPOLB
     WriteI2C(0x00); //GPINTENA
@@ -62,8 +62,8 @@ void Config_MCP23017_Fast(){
     WriteI2C(0x00); //DEFVALB
     WriteI2C(0x00); //INTCONA
     WriteI2C(0x00); //INTCONB
-    WriteI2C(0b00010010); //IOCON
-    WriteI2C(0b00010010); //IOCON
+    WriteI2C(IOCON_SEQ_16bit); //IOCON
+    WriteI2C(IOCON_SEQ_16bit); //IOCON
     WriteI2C(0x00); //GPPUA
     WriteI2C(0x00); //GPPUB
     WriteI2C(0x00); //INTFA
@@ -77,8 +77,7 @@ void Config_MCP23017_Fast(){
     
     I2C_STP();   
     
-   //Config IOCON, no seq SEQOLP, no MIRROR, no slew rate, BANK=1
-    ChangeIOCONMode(IOCON_NOSEQ_8bit);
+    ChangeIOCONMode(IOCON_NOSEQ_8bit); //swap to 8bit A,B mode
 }
 
 void Init_MCP23017(){
@@ -91,7 +90,8 @@ void ChangeIOCONMode(unsigned char mode){
         Send_ConfigToRegister(IOCON_S,mode);
     }else if(mode == IOCON_SEQ_16bit){
         Send_ConfigToRegister(IOCON_NS,mode);
-    } 
+    }
+    I2C_PAUSE(5000);
 }
 
 void GoToAddress(unsigned char addr){
@@ -99,6 +99,8 @@ void GoToAddress(unsigned char addr){
     WriteI2C(ADR_MCP23017_W);
     WriteI2C(addr); 
     I2C_STP();
+    
+    I2C_PAUSE(1000);
 }
 
 void Send_ConfigToRegister(unsigned char reg, unsigned char cmd){
@@ -113,10 +115,10 @@ void Send_ConfigToRegister(unsigned char reg, unsigned char cmd){
 
 char Read_NoSeqConfigFromRegister(unsigned char reg){     
     I2C_PAUSE(1000); 
-    
     char data=0; 
     
     GoToAddress(reg);
+    
     I2C_STR();
     WriteI2C(ADR_MCP23017_R); //Read
     data=I2CRead(false);
@@ -131,6 +133,7 @@ char* Read_SeqConfigFromRegister(){
     char data[MCP2017_MEM_SIZE];
     
     GoToAddress(0x00);
+    
     I2C_STR();
     WriteI2C(ADR_MCP23017_R); //Read
 
@@ -145,9 +148,7 @@ char* Read_SeqConfigFromRegister(){
 }
 
 unsigned char Read_DataFromPort(unsigned char port){
-    unsigned char data=0;
-    data=Read_NoSeqConfigFromRegister(port);
-    return data;
+    return Read_NoSeqConfigFromRegister(port);
 }
 
 void Send_DataToPort(unsigned char port, unsigned char data){
@@ -162,7 +163,7 @@ void Set_IOC(unsigned char port, unsigned char pins, unsigned char mode, unsigne
     //Enable and config ioc on port
     Send_ConfigToRegister(GPINTEN | port,pins);
     if ( mode == true){
-        Send_ConfigToRegister(DEFVAL | port,pins); 
+        Send_ConfigToRegister(DEFVAL | port,defval); 
         Send_ConfigToRegister(INTCON_ | port,pins);
     }  
 }

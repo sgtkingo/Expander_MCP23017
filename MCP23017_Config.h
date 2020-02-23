@@ -70,10 +70,10 @@ IOCON.BANK = 0
 #define PORT_B_MASK 0x10
 
 #define IOCON_NS 0x05  //Config IOCON, no seq BANK=1
-#define IOCON_S 0x0A  //Config IOCON, seq BANK=0
+#define IOCON_S 0x0B  //Config IOCON, seq BANK=0
 
-#define IOCON_NOSEQ_8bit 0b10110010  //Disable Sequential mode, BANK=1, Slew Rate=0, no MIRROR
-#define IOCON_SEQ_16bit 0b00000010 //Enable Sequential mode, BANK=0, Slew Rate=1, no MIRROR
+#define IOCON_NOSEQ_8bit 0b10111010  //Disable Sequential mode, BANK=1, Slew Rate=0, no MIRROR, HW en
+#define IOCON_SEQ_16bit 0b00011010 //Enable Sequential mode, BANK=0, Slew Rate=0, no MIRROR, HW en
 
 #define GPPU 0x06   //Config GPPU, pullup
 #define INTF 0x07   //Config INTF, interrrupt flag
