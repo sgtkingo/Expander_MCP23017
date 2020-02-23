@@ -31,24 +31,28 @@
 
 #include "MCP23017_Config.h"
 
+void Init_MCP23017();
+void Config_MCP23017_Fast();
+
 void Send_ConfigToRegister(unsigned char reg, unsigned char cmd);
+void ChangeIOCONMode(unsigned char mode);
+void GoToAddress(unsigned char addr);
 
+unsigned char Read_DataFromPort(unsigned char port);
+void Send_DataToPort(unsigned char port, unsigned char data);
+void Set_DirectionOfPort(unsigned char port, unsigned char dir);
 
-void ConfigDeviceFast(){
-    /*Send_ConfigToRegister(IOCON, 0b00101010); //Config IOCON, no seq BANK=0
-    Send_ConfigToRegister(GPPU, 0x00); //Config GPPU, pullup
-    Send_ConfigToRegister(INTF, 0x00); //Config INTF, interrrupt
-    Send_ConfigToRegister(INTCAP, 0x00); //Config INTCAP, interrrupt pre value
-    Send_ConfigToRegister(GPIO, 0x00); //Config GPIO, general purpose register
-    Send_ConfigToRegister(OLAT, 0x00); //Config OLAT, output latch register
-    
-    Send_ConfigToRegister(IOCON, 0b00001010); //Config IOCON, seq BANK=1*/
-    
-    DEVICE_ADRESS&=WBIT;
+void Set_IOC(unsigned char port, unsigned char pins, unsigned char mode, unsigned char defval);
+unsigned char Get_IOC_Flag(unsigned char port);
+unsigned char Get_IOC_Cap(unsigned char port);
+
+void Config_MCP23017_Fast(){
+    I2C_PAUSE(1000);
     
     I2C_STR();
-    WriteI2C(DEVICE_ADRESS);
-    WriteI2C(0xFF); //IODIRA
+    WriteI2C(ADR_MCP23017_W);
+    
+    WriteI2C(0x00); //IODIRA
     WriteI2C(0x00); //IODIRB
     WriteI2C(0x00); //IPOLA
     WriteI2C(0x00); //IPOLB
@@ -58,8 +62,8 @@ void ConfigDeviceFast(){
     WriteI2C(0x00); //DEFVALB
     WriteI2C(0x00); //INTCONA
     WriteI2C(0x00); //INTCONB
-    WriteI2C(0b00001010); //IOCON
-    WriteI2C(0b00001010); //IOCON
+    WriteI2C(0b00010010); //IOCON
+    WriteI2C(0b00010010); //IOCON
     WriteI2C(0x00); //GPPUA
     WriteI2C(0x00); //GPPUB
     WriteI2C(0x00); //INTFA
@@ -70,37 +74,51 @@ void ConfigDeviceFast(){
     WriteI2C(0x00); //GPIOB    
     WriteI2C(0x00); //OLATA
     WriteI2C(0x00); //OLATB    
+    
     I2C_STP();   
     
-    Send_ConfigToRegister(IOCON, 0b00101010); //Config IOCON, no seq BANK=0
+   //Config IOCON, no seq SEQOLP, no MIRROR, no slew rate, BANK=1
+    ChangeIOCONMode(IOCON_NOSEQ_8bit);
 }
 
-void Init_MCP23017(unsigned int addr){
-    SetDeviceAdress(addr);
+void Init_MCP23017(){
     I2C_INIT();
-    I2C_CLEARBUS();
-    ConfigDeviceFast();
+    Config_MCP23017_Fast(); //Default config and swap to paraler 8 bit mode A,B
+}
+
+void ChangeIOCONMode(unsigned char mode){
+    if(mode == IOCON_NOSEQ_8bit){
+        Send_ConfigToRegister(IOCON_S,mode);
+    }else if(mode == IOCON_SEQ_16bit){
+        Send_ConfigToRegister(IOCON_NS,mode);
+    } 
+}
+
+void GoToAddress(unsigned char addr){
+    I2C_STR();
+    WriteI2C(ADR_MCP23017_W);
+    WriteI2C(addr); 
+    I2C_STP();
 }
 
 void Send_ConfigToRegister(unsigned char reg, unsigned char cmd){
-    DEVICE_ADRESS&=WBIT;
     I2C_STR();
-    WriteI2C(DEVICE_ADRESS);
+    WriteI2C(ADR_MCP23017_W);
     WriteI2C(reg);
     WriteI2C(cmd);
-    I2C_STP();    
+    I2C_STP();   
+    
+    I2C_PAUSE(1000);
 }
 
-char Read_NoSeqConfigFromRegister(){
-    char data=0;
+char Read_NoSeqConfigFromRegister(unsigned char reg){     
+    I2C_PAUSE(1000); 
     
-    DEVICE_ADRESS&=WBIT;
-    I2C_STR();
-    WriteI2C(DEVICE_ADRESS); //Write 
+    char data=0; 
     
-    DEVICE_ADRESS&=RBIT;
+    GoToAddress(reg);
     I2C_STR();
-    WriteI2C(DEVICE_ADRESS); //Read
+    WriteI2C(ADR_MCP23017_R); //Read
     data=I2CRead(false);
     I2C_STP();
     
@@ -108,41 +126,53 @@ char Read_NoSeqConfigFromRegister(){
 }
 
 char* Read_SeqConfigFromRegister(){
-    char data[22];
+    ChangeIOCONMode(IOCON_SEQ_16bit); //Enable Sequential mode, BANK=0, Slew Rate=1
     
-    DEVICE_ADRESS&=WBIT;
-    I2C_STR();
-    WriteI2C(DEVICE_ADRESS); //Write 
+    char data[MCP2017_MEM_SIZE];
     
-    DEVICE_ADRESS&=RBIT;
+    GoToAddress(0x00);
     I2C_STR();
-    WriteI2C(DEVICE_ADRESS); //Read
+    WriteI2C(ADR_MCP23017_R); //Read
+
     for(int i=0;i<22;i++){
         data[i]=I2CRead(true);
     }
     I2C_STP();
     
+    ChangeIOCONMode(IOCON_NOSEQ_8bit); //Disable Sequential mode, BANK=1, Slew Rate=0
+    
+    return data;
+}
+
+unsigned char Read_DataFromPort(unsigned char port){
+    unsigned char data=0;
+    data=Read_NoSeqConfigFromRegister(port);
     return data;
 }
 
 void Send_DataToPort(unsigned char port, unsigned char data){
-    DEVICE_ADRESS&=WBIT;
-    
-    I2C_STR();
-    WriteI2C(DEVICE_ADRESS);
-    WriteI2C(port);
-    WriteI2C(data);
-    I2C_STP();
+    Send_ConfigToRegister(port,data);
 }
 
 void Set_DirectionOfPort(unsigned char port, unsigned char dir){
-    DEVICE_ADRESS&=WBIT;
-    
-    I2C_STR();
-    WriteI2C(DEVICE_ADRESS);
-    WriteI2C(port);
-    WriteI2C(dir);
-    I2C_STP();
+    Send_ConfigToRegister(port,dir);
+}
+
+void Set_IOC(unsigned char port, unsigned char pins, unsigned char mode, unsigned char defval){
+    //Enable and config ioc on port
+    Send_ConfigToRegister(GPINTEN | port,pins);
+    if ( mode == true){
+        Send_ConfigToRegister(DEFVAL | port,pins); 
+        Send_ConfigToRegister(INTCON_ | port,pins);
+    }  
+}
+
+unsigned char Get_IOC_Flag(unsigned char port){
+    Read_NoSeqConfigFromRegister(INTF | port);
+}
+
+unsigned char Get_IOC_Cap(unsigned char port){
+    Read_NoSeqConfigFromRegister(INTCAP | port);
 }
 
 #endif	/* MCP23017_FUNCTION */

@@ -56,27 +56,41 @@ IOCON.BANK = 0
 #ifndef MCP23017_CONFIG
 #define	MCP23017_CONFIG
 
-#include "I2CLibV2.h"
+#include "I2C_PICLIB.h"
 
-#define IOCON 0x05  //Config IOCON, no seq BANK=0
+#define ADR_MCP23017 0b01000000
+// address_of_24LC64_in the BUS I2C, W	
+#define	ADR_MCP23017_W (ADR_MCP23017 MASK_W)	
+// address_of_24LC64_in the BUS I2C, R	
+#define	ADR_MCP23017_R (ADR_MCP23017 MASK_R)
+
+#define MCP2017_MEM_SIZE 22
+
+#define PORT_A_MASK 0x00
+#define PORT_B_MASK 0x10
+
+#define IOCON_NS 0x05  //Config IOCON, no seq BANK=1
+#define IOCON_S 0x0A  //Config IOCON, seq BANK=0
+
+#define IOCON_NOSEQ_8bit 0b10110010  //Disable Sequential mode, BANK=1, Slew Rate=0, no MIRROR
+#define IOCON_SEQ_16bit 0b00000010 //Enable Sequential mode, BANK=0, Slew Rate=1, no MIRROR
+
 #define GPPU 0x06   //Config GPPU, pullup
-#define INTF 0x07   //Config INTF, interrrupt
-#define INTCAP 0x08 //Config INTCAP, interrrupt pre value
-#define GPIOA 0x09   //Config GPIO, general purpose register A
-#define GPIOB 0x19   //Config GPIO, general purpose register B
+#define INTF 0x07   //Config INTF, interrrupt flag
+#define INTCAP 0x08 //Config INTCAP, interrrupt lach reg ReadOnly
+#define GPINTEN 0x02 //Config GPINTEN, IOC pins ON/OFF
+#define INTCON_ 0x04 //Config INTCON, IOC swap DEFVAL/previous value
+#define DEFVAL 0x03 //Config defalut value for interrupt-on-change on port
+
+#define GPIOA 0x09   //Config GPIO, general purpose register A, for READ/W
+#define GPIOB 0x19   //Config GPIO, general purpose register B, for READ/W
 
 #define IODIRA 0x00 //Config IODIR, direction IN/OUT A
 #define IODIRB 0x10 //Config IODIR, direction IN/OUT B
 
-#define OLAT 0x0A   //Config OLAT, output latch register
+#define OLATA 0x0A   //Config OLATA, output latch register
+#define OLATB 0x1A   //Config OLATB, output latch register
 
-#define ADDRESS 0x40 //0b0100
-
-unsigned char DEVICE_ADRESS=0x00;
-
-void SetDeviceAdress(unsigned char addr){
-    DEVICE_ADRESS=ADDRESS|addr;
-}
 
 #endif	/* XC_HEADER_TEMPLATE_H */
 

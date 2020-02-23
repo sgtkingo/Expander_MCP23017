@@ -23,6 +23,9 @@ void ClearDevice(){
 }
 //defined test fce
 void TestDevice(){
+    LATD=0xFF;
+    delay_ms(1000);
+    LATD=0x00;
     return;
 }
 
@@ -30,10 +33,13 @@ void main(void) {
     InitDevice();
     ClearDevice();
     TestDevice();
-    Init_MCP23017(0x00);
+    
+    Init_MCP23017();
     Set_DirectionOfPort(IODIRA, 0xFF);
     Set_DirectionOfPort(IODIRB, 0x00);
-    Send_DataToPort(GPIOB, 0xFF);
-    PORTD=0xAA;
+    
+    Send_DataToPort(GPIOB, 0xAA);   
+    LATD=Read_DataFromPort(GPIOA);
+    
     while(1);
 }
