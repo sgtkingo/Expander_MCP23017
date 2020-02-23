@@ -46,6 +46,9 @@ void Set_IOC(unsigned char port, unsigned char pins, unsigned char mode, unsigne
 unsigned char Get_IOC_Flag(unsigned char port);
 unsigned char Get_IOC_Cap(unsigned char port);
 
+void Set_PullUp(unsigned char port, unsigned char pins);
+void Set_PortPol(unsigned char port, unsigned char pins);
+
 void Config_MCP23017_Fast(){
     I2C_PAUSE(1000);
     
@@ -174,6 +177,14 @@ unsigned char Get_IOC_Flag(unsigned char port){
 
 unsigned char Get_IOC_Cap(unsigned char port){
     Read_NoSeqConfigFromRegister(INTCAP | port);
+}
+
+void Set_PullUp(unsigned char port, unsigned char pins){
+    Send_ConfigToRegister(GPPU | port,pins);
+}
+
+void Set_PortPol(unsigned char port, unsigned char pins){
+    Send_ConfigToRegister(IPOL | port,pins);
 }
 
 #endif	/* MCP23017_FUNCTION */

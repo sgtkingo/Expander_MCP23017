@@ -43,14 +43,21 @@ void main(void) {
     TestDevice();
     
     Init_MCP23017();
-    Set_DirectionOfPort(IODIRA, 0xFF);
+    
+    Set_DirectionOfPort(IODIRA, 0xF0);
+    Set_PullUp(PORT_A_MASK, 0xF0); //pull-up port A
+    Set_PortPol(PORT_A_MASK, 0xF0);
+    
     Set_DirectionOfPort(IODIRB, 0x00);
     
     Set_IOC(PORT_A_MASK,0xF0,true,0x0F);
-    Get_IOC_Cap(PORT_A_MASK);
+    Get_IOC_Cap(PORT_A_MASK); //clear interrupt
     
+    /*Set_IOC(PORT_B_MASK,0x0F,true,0xF0);
+    Get_IOC_Cap(PORT_B_MASK); //clear intterrupt*/
+    
+    Send_DataToPort(GPIOA, 0x0F); //!!! clear OLATA! 
     Send_DataToPort(GPIOB, 0xAA);
-    Send_DataToPort(GPIOA, 0x00); //!!! clear OLATA! 
     
     LATD=Read_DataFromPort(GPIOA);
     delay_ms(1000);
@@ -62,8 +69,8 @@ void main(void) {
             //LATD=Get_IOC_Flag(PORT_A_MASK);
             //delay_ms(500);
             //LATD=Get_IOC_Cap(PORT_A_MASK);
-            LATD=Read_DataFromPort(GPIOA);
             //delay_ms(500);
+            LATD=Read_DataFromPort(GPIOA);
         }else LATD=0x00;
     }
 }

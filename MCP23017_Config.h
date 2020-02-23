@@ -81,6 +81,7 @@ IOCON.BANK = 0
 #define GPINTEN 0x02 //Config GPINTEN, IOC pins ON/OFF
 #define INTCON_ 0x04 //Config INTCON, IOC swap DEFVAL/previous value
 #define DEFVAL 0x03 //Config defalut value for interrupt-on-change on port
+#define IPOL 0x01 //Config reflex polarization of PORT (for read))
 
 #define GPIOA 0x09   //Config GPIO, general purpose register A, for READ/W
 #define GPIOB 0x19   //Config GPIO, general purpose register B, for READ/W
